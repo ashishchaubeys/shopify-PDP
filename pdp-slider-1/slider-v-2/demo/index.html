@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alta Down Jacket</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;background:#f9f9f9;}
+    .container{display:flex;max-width:1200px;margin:0 auto;padding:20px;gap:20px;}
+    .slider-column{flex:1;position:sticky;top:20px;height:fit-content;}
+    .details-column{flex:1;}
+    .slider-wrapper{position:relative;width:100%;overflow:hidden;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
+    .slide{display:none;}
+    .slide img{width:100%;height:auto;border-radius:16px;}
+    .thumbnails{display:flex;gap:10px;margin-top:12px;justify-content:center;}
+    .thumbnail{position:relative;cursor:pointer;overflow:hidden;border-radius:8px;}
+    .thumbnail img{width:60px;height:60px;object-fit:cover;transition:transform .3s;}
+    .thumbnail:hover img{transform:scale(1.1);}
+    .thumbnail.active::after{content:"";position:absolute;bottom:0;left:0;width:100%;height:3px;background:#000;}
+
+    .zoom-icon{
+      position:absolute;top:16px;right:16px;width:44px;height:44px;
+      background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);color:#fff;
+      font-size:20px;border-radius:50%;display:flex;align-items:center;
+      justify-content:center;cursor:pointer;transition:.3s;
+    }
+    .zoom-icon:hover{background:#000;transform:scale(1.1);}
+
+    .color-swatches{display:flex;gap:12px;margin:16px 0;}
+    .color-swatches img{width:40px;height:40px;cursor:pointer;border:2px solid #eee;border-radius:50%;transition:.3s;}
+    .color-swatches img:hover{border-color:#000;transform:scale(1.1);}
+    .color-swatch.active{border-color:#000 !important;}
+
+    .size-options button{margin:5px 5px 5px 0;padding:10px 16px;border:1px solid #000;background:#fff;cursor:pointer;border-radius:8px;transition:.3s;}
+    .size-options button:hover,.size-options .selected{background:#000;color:#fff;}
+
+    .quantity-selector{display:flex;align-items:center;gap:10px;margin:16px 0;}
+    .quantity-selector button{width:40px;height:40px;font-size:18px;background:#f5f5f5;border:1px solid #ddd;border-radius:8px;cursor:pointer;}
+    .quantity-selector input{width:60px;text-align:center;height:40px;border:1px solid #ddd;border-radius:8px;}
+
+    .add-to-cart,.buy-now{display:block;width:100%;padding:16px;margin:12px 0;text-align:center;font-weight:bold;border:none;cursor:pointer;transition:.3s;border-radius:12px;}
+    .add-to-cart{background:#fff;color:#000;border:2px solid #000;}
+    .buy-now{background:#000;color:#fff;}
+    .add-to-cart:hover,.buy-now:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.15);}
+
+    .best-seller{position:absolute;top:16px;right:16px;background:#ff3b30;color:#fff;padding:6px 12px;font-size:11px;font-weight:bold;border-radius:50px;}
+
+    .accordion{margin:20px 0;border-bottom:1px solid #eee;}
+    .accordion-button{width:100%;padding:16px 0;background:transparent;border:none;text-align:left;font-weight:600;cursor:pointer;font-size:15px;display:flex;justify-content:space-between;align-items:center;transition:.3s;}
+    .accordion-button::after{content:"+";font-weight:bold;font-size:20px;}
+    .accordion-button.open::after{content:"−";}
+    .accordion-content{padding:0 0 16px;display:none;font-size:14px;line-height:1.7;color:#555;}
+
+    /* ULTRA-TRANSPARENT NAV BAR (MAIN SLIDER) */
+    .slider-nav {
+    position: absolute;
+    bottom: 85px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 5px 22px;
+    border-radius: 50px;
+    font-weight: 400;
+    font-size: 15px;
+    color: #000;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: all 0.3s ease;
+}
+    .slider-nav:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    }
+
+    .slider-label { min-width: 28px; text-align: center; }
+    .slider-label--current { font-weight: 400; }
+    .slider-label--total { opacity: 0.7; }
+
+    .nav-arrow {
+      width: 40px; height: 40px; border: none; background: transparent;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.3s ease;
+      color: #fff;
+    }
+    .nav-arrow:hover { transform: scale(1.18); }
+    .nav-arrow svg { width: 28px; height: 10px; color: #000;}
+
+    /* ZOOM MODAL */
+    .zoom-modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(16px);
+      z-index: 9999; justify-content: center; align-items: center; padding: 30px;
+    }
+    .zoom-modal img {
+      max-width: 88%; max-height: 88%; object-fit: contain;
+      border-radius: 20px; box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+      transition: transform .4s ease;
+    }
+    .zoom-modal img:hover { transform: scale(1.02); }
+
+    /* ULTRA-TRANSPARENT NAV BAR (ZOOM MODAL) */
+    .zoom-nav {
+      position: absolute;
+      bottom: 93px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(0px);
+      padding: 4px 22px;
+      border-radius: 50px;
+      font-weight: 400;
+      font-size: 15px;
+      color: #000;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      transition: all 0.3s ease;
+    }
+    .zoom-nav:hover {
+      background: rgba(255, 255, 255, 0.16);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+
+    .close {
+      position: absolute; top: 30px; right: 30px;
+      width: 52px; height: 52px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(12px);
+      border-radius: 50%; color: white;
+      font-size: 28px; font-weight: 300;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: .4s;
+    }
+    .close:hover {
+      background: rgba(255,0,0,0.7);
+      transform: scale(1.15) rotate(90deg);
+    }
+
+    @media (max-width:768px){
+      .container{flex-direction:column;}
+      .slider-column{position:static;}
+      .best-seller{position:static;display:inline-block;margin-bottom:12px;}
+      .slider-nav,.zoom-nav{bottom:85px;padding:4px 16px;font-size:13px;gap:14px;}
+      .nav-arrow{width:36px;height:36px;}
+      .nav-arrow svg{width:24px;height:8px;}
+      .close{top:15px;right:15px;width:48px;height:48px;}
+    }
+  </style>
+</head>
+<body>
+<section class="mainslider">
+  <div class="container">
+    <!-- LEFT: IMAGE SLIDER -->
+    <div class="slider-column">
+      <div class="slider-wrapper">
+        <div class="slide"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0004_alta-down-jacket-orange-packshot.jpg" alt="Orange Jacket"><span class="zoom-icon">+</span></div>
+        <div class="slide"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0000_alta-down-jacket-orange-secondary-img-02.jpg" alt="Orange Jacket"><span class="zoom-icon">+</span></div>
+        <div class="slide"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0003_alta-down-jacket-orange-secondary-img-01.jpg" alt="Orange Jacket"><span class="zoom-icon">+</span></div>
+        <div class="slide"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0001_alta-down-jacket-orange-zoom-01.jpg" alt="Orange Jacket"><span class="zoom-icon">+</span></div>
+
+        <div class="thumbnails">
+          <div class="thumbnail active"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0004_alta-down-jacket-orange-packshot.jpg" alt="Thumb 1"></div>
+          <div class="thumbnail"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0000_alta-down-jacket-orange-secondary-img-02.jpg" alt="Thumb 2"></div>
+          <div class="thumbnail"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0003_alta-down-jacket-orange-secondary-img-01.jpg" alt="Thumb 3"></div>
+          <div class="thumbnail"><img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0001_alta-down-jacket-orange-zoom-01.jpg" alt="Thumb 4"></div>
+        </div>
+
+        <!-- ULTRA-TRANSPARENT NAV BAR -->
+        <div class="slider-nav">
+          <span class="slider-label slider-label--current js-current">01</span>
+          <button class="nav-arrow prev" onclick="plusSlides(-1)">
+            <svg width="36" height="12" viewBox="0 0 36 12" fill="none">
+              <rect x="5.65625" y="0.685547" width="1" height="8" rx="0.5" transform="rotate(45 5.65625 0.685547)" fill="currentColor"></rect>
+              <rect x="6.36328" y="11.293" width="1" height="8" rx="0.5" transform="rotate(135 6.36328 11.293)" fill="currentColor"></rect>
+              <rect x="1" y="7" width="1" height="35" rx="0.5" transform="rotate(-90 1 7)" fill="currentColor"></rect>
+            </svg>
+          </button>
+          <button class="nav-arrow next" onclick="plusSlides(1)">
+            <svg width="36" height="12" viewBox="0 0 36 12" fill="none">
+              <rect x="30.3438" y="11.6572" width="1" height="8" rx="0.5" transform="rotate(-135 30.3438 11.6572)" fill="currentColor"></rect>
+              <rect x="29.6367" y="1.0498" width="1" height="8" rx="0.5" transform="rotate(-45 29.6367 1.0498)" fill="currentColor"></rect>
+              <rect x="35" y="5.34277" width="1" height="35" rx="0.5" transform="rotate(90 35 5.34277)" fill="currentColor"></rect>
+            </svg>
+          </button>
+          <span class="slider-label slider-label--total">04</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: PRODUCT DETAILS -->
+    <div class="details-column">
+      <span class="best-seller">BEST SELLER</span>
+      <h1>ALTA DOWN JACKET</h1>
+      <p style="font-size:20px;font-weight:bold;margin:8px 0;">€675.00</p>
+      <p><strong>SKU:</strong> ALT001</p>
+      <p><strong>Vendor:</strong> Parel</p>
+
+      <div style="margin:16px 0;">
+        <strong>Color:</strong>
+        <div class="color-swatches">
+          <img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0004_alta-down-jacket-orange-packshot.jpg" class="color-swatch active" alt="Orange">
+          <img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0057s_0003_alta-down-jacket-black-packshot.jpg?v=1733912376&width=2000" class="color-swatch" alt="Black">
+          <img src="//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0056s_0003_alta-down-jacket-sand-packshot.jpg?v=1733912630&width=2000" class="color-swatch" alt="Beige">
+        </div>
+      </div>
+
+      <div class="size-options">
+        <button class="size-option selected">SM</button>
+        <button class="size-option">MD</button>
+        <button class="size-option">LG</button>
+        <button class="size-option">XL</button>
+        <button class="size-option">XXL</button>
+        <button class="size-chart" style="margin-left:10px;background:#f0f0f0;border:1px solid #ddd;">Size Chart</button>
+      </div>
+
+      <div class="quantity-selector">
+        <button class="quantity-decrease">-</button>
+        <input type="number" id="quantity" value="1" min="1" max="10" readonly>
+        <button class="quantity-increase">+</button>
+      </div>
+
+      <button class="add-to-cart">ADD TO CART</button>
+      <button class="buy-now">BUY IT NOW</button>
+
+      <div class="accordion">
+        <button class="accordion-button" data-title="Description">Description</button>
+        <div class="accordion-content">
+          Designed to keep you as warm during the cold season, the Alta Down Jacket provides unrelenting insulation without compromising on weight.
+        </div>
+      </div>
+      <div class="accordion">
+        <button class="accordion-button" data-title="Shipping & Returns">Shipping & Returns</button>
+        <div class="accordion-content">
+          Free shipping on orders over €50. Returns accepted within 30 days.
+        </div>
+      </div>
+      <div class="accordion">
+        <button class="accordion-button" data-title="Details">Details</button>
+        <div class="accordion-content">
+          Water-resistant, lightweight, insulated.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ZOOM MODAL -->
+<div class="zoom-modal">
+  <span class="close">×</span>
+  <img src="" alt="Zoomed Image">
+
+  <!-- ULTRA-TRANSPARENT NAV BAR IN ZOOM -->
+  <div class="zoom-nav">
+    <span class="slider-label slider-label--current js-zoom-current">01</span>
+    <button class="nav-arrow zoom-prev">
+      <svg width="36" height="12" viewBox="0 0 36 12" fill="none">
+        <rect x="5.65625" y="0.685547" width="1" height="8" rx="0.5" transform="rotate(45 5.65625 0.685547)" fill="currentColor"></rect>
+        <rect x="6.36328" y="11.293" width="1" height="8" rx="0.5" transform="rotate(135 6.36328 11.293)" fill="currentColor"></rect>
+        <rect x="1" y="7" width="1" height="35" rx="0.5" transform="rotate(-90 1 7)" fill="currentColor"></rect>
+      </svg>
+    </button>
+    <button class="nav-arrow zoom-next">
+      <svg width="36" height="12" viewBox="0 0 36 12" fill="none">
+        <rect x="30.3438" y="11.6572" width="1" height="8" rx="0.5" transform="rotate(-135 30.3438 11.6572)" fill="currentColor"></rect>
+        <rect x="29.6367" y="1.0498" width="1" height="8" rx="0.5" transform="rotate(-45 29.6367 1.0498)" fill="currentColor"></rect>
+        <rect x="35" y="5.34277" width="1" height="35" rx="0.5" transform="rotate(90 35 5.34277)" fill="currentColor"></rect>
+      </svg>
+    </button>
+    <span class="slider-label slider-label--total">04</span>
+  </div>
+</div>
+
+<script>
+  let slideIndex = 0;
+  const slides = document.getElementsByClassName("slide");
+  const thumbnails = document.getElementsByClassName("thumbnail");
+  const colorSwatches = document.getElementsByClassName("color-swatch");
+  const quantityInput = document.getElementById("quantity");
+  const currentLabel = document.querySelector('.js-current');
+  const zoomCurrentLabel = document.querySelector('.js-zoom-current');
+  const totalSlides = slides.length;
+  let mainInterval, zoomInterval;
+
+  function updateCounters() {
+    currentLabel.textContent = String(slideIndex + 1).padStart(2, '0');
+    zoomCurrentLabel.textContent = String(slideIndex + 1).padStart(2, '0');
+  }
+
+  function showSlides(n) {
+    if (n >= totalSlides) slideIndex = 0;
+    if (n < 0) slideIndex = totalSlides - 1;
+    for (let i = 0; i < slides.length; i++) {
+      slides[i].style.display = "none";
+      thumbnails[i].classList.remove("active");
+    }
+    slides[slideIndex].style.display = "block";
+    thumbnails[slideIndex].classList.add("active");
+    updateCounters();
+  }
+
+  function plusSlides(n) { showSlides(slideIndex += n); }
+  function currentSlide(n) { showSlides(slideIndex = n); }
+
+  function initThumbnails() {
+    for (let i = 0; i < thumbnails.length; i++) {
+      thumbnails[i].addEventListener("click", () => currentSlide(i));
+    }
+  }
+
+  /* ZOOM MODAL */
+  const zoomModal = document.querySelector('.zoom-modal');
+  const zoomImg = zoomModal.querySelector('img');
+  const zoomPrev = zoomModal.querySelector('.zoom-prev');
+  const zoomNext = zoomModal.querySelector('.zoom-next');
+  const closeBtn = zoomModal.querySelector('.close');
+
+  function openZoomModal() {
+    const visible = document.querySelector('.slide[style*="block"]');
+    const img = visible ? visible.querySelector('img') : slides[0].querySelector('img');
+    zoomImg.src = img.src;
+    zoomModal.style.display = 'flex';
+    zoomModal.dataset.index = slideIndex;
+    updateCounters();
+    startZoomAutoplay(); // Start auto-slide
+  }
+
+  function changeZoomImage(n) {
+    let idx = parseInt(zoomModal.dataset.index) + n;
+    if (idx >= totalSlides) idx = 0;
+    if (idx < 0) idx = totalSlides - 1;
+    zoomImg.src = slides[idx].querySelector('img').src;
+    zoomModal.dataset.index = idx;
+    slideIndex = idx;
+    showSlides(slideIndex);
+  }
+
+  function startZoomAutoplay() {
+    clearInterval(zoomInterval);
+    zoomInterval = setInterval(() => {
+      changeZoomImage(1);
+    }, 5000);
+  }
+
+  document.querySelectorAll('.zoom-icon').forEach(icon => {
+    icon.addEventListener('click', openZoomModal);
+  });
+
+  zoomPrev.onclick = () => { changeZoomImage(-1); startZoomAutoplay(); };
+  zoomNext.onclick = () => { changeZoomImage(1); startZoomAutoplay(); };
+  closeBtn.onclick = () => {
+    zoomModal.style.display = 'none';
+    clearInterval(zoomInterval);
+  };
+  zoomModal.onclick = e => { if (e.target === zoomModal) closeBtn.onclick(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBtn.onclick(); });
+
+  // Pause zoom autoplay on hover
+  zoomModal.addEventListener('mouseenter', () => clearInterval(zoomInterval));
+  zoomModal.addEventListener('mouseleave', startZoomAutoplay);
+
+  /* COLOR SWATCHES */
+  const colorImages = {
+    "orange": ["//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0004_alta-down-jacket-orange-packshot.jpg","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0000_alta-down-jacket-orange-secondary-img-02.jpg","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0003_alta-down-jacket-orange-secondary-img-01.jpg","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0055s_0001_alta-down-jacket-orange-zoom-01.jpg"],
+    "black": ["//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0057s_0003_alta-down-jacket-black-packshot.jpg?v=1733912376&width=2000","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0057s_0000_alta-down-jacket-black-secondary-img-02.jpg?v=1733912376&width=2000","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0057s_0001_alta-down-jacket-black-secondary-img-01.jpg?v=1733912376&width=2000","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0057s_0002_alta-down-jacket-black-zoom-01.jpg?v=1733912376&width=2000"],
+    "beige": ["//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0056s_0003_alta-down-jacket-sand-packshot.jpg?v=1733912630&width=2000","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0056s_0000_alta-down-jacket-sand-secondary-img-02.jpg?v=1733912630&width=2000","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0056s_0001_alta-down-jacket-sand-secondary-img-01.jpg?v=1733912630&width=2000","//stretch-theme-snow.myshopify.com/cdn/shop/files/products_0000s_0056s_0002_alta-down-jacket-sand-zoom-01.jpg?v=1733912630&width=2000"]
+  };
+
+  function initColorSwatches() {
+    for (let i = 0; i < colorSwatches.length; i++) {
+      colorSwatches[i].addEventListener("click", () => {
+        const color = colorSwatches[i].alt.toLowerCase();
+        for (let j = 0; j < slides.length; j++) {
+          slides[j].querySelector("img").src = colorImages[color][j];
+          thumbnails[j].querySelector("img").src = colorImages[color][j];
+        }
+        for (let j = 0; j < colorSwatches.length; j++) colorSwatches[j].classList.remove("active");
+        colorSwatches[i].classList.add("active");
+        showSlides(0);
+      });
+    }
+  }
+
+  function initSize() {
+    document.querySelectorAll(".size-option").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".size-option").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+    document.querySelector(".size-chart").addEventListener("click", () => alert("Size Chart Opened"));
+  }
+
+  function initQuantity() {
+    document.querySelector(".quantity-increase").onclick = () => { if (+quantityInput.value < 10) quantityInput.value = +quantityInput.value + 1; };
+    document.querySelector(".quantity-decrease").onclick = () => { if (+quantityInput.value > 1) quantityInput.value = +quantityInput.value - 1; };
+  }
+
+  function initAccordion() {
+    document.querySelectorAll(".accordion-button").forEach(btn => {
+      const title = btn.getAttribute("data-title");
+      btn.innerHTML = title;
+      btn.classList.add("closed");
+      btn.onclick = () => {
+        const content = btn.nextElementSibling;
+        const isOpen = btn.classList.contains("open");
+        document.querySelectorAll(".accordion-content").forEach(c => c.style.display = "none");
+        document.querySelectorAll(".accordion-button").forEach(b => { b.innerHTML = b.getAttribute("data-title"); b.classList.remove("open"); b.classList.add("closed"); });
+        if (!isOpen) { content.style.display = "block"; btn.classList.remove("closed"); btn.classList.add("open"); }
+      };
+    });
+  }
+
+  function startMainAutoplay() {
+    clearInterval(mainInterval);
+    mainInterval = setInterval(() => plusSlides(1), 5000);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    showSlides(slideIndex);
+    initThumbnails();
+    initColorSwatches();
+    initSize();
+    initQuantity();
+    initAccordion();
+    startMainAutoplay();
+
+    // Pause main autoplay on hover
+    document.querySelector(".slider-wrapper").addEventListener("mouseenter", () => clearInterval(mainInterval));
+    document.querySelector(".slider-wrapper").addEventListener("mouseleave", startMainAutoplay);
+  });
+</script>
+</body>
+</html>
